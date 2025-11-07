@@ -1,0 +1,168 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { useState } from "react";
+import { reservations } from "../data/reservations.json";
+
+const existingReservations = reservations || [];
+---
+
+<Layout>
+  <section class="max-w-3xl mx-auto mt-20 px-6">
+    <h1 class="text-4xl font-bold text-amber-600 mb-6 text-center">Reservations</h1>
+
+    <!-- Email Input -->
+    <div id="login" class="flex flex-col gap-4 items-center">
+      <input
+        type="email"
+        id="email"
+        placeholder="Enter your email"
+        class="border border-gray-300 rounded-lg p-3 w-full max-w-md"
+      />
+      <button
+        id="checkBtn"
+        class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-lg font-semibold"
+      >
+        Create a new reservation via E-Mail
+      </button>
+    </div>
+
+    <!-- Reservation List -->
+    <div id="reservation-list" class="hidden mt-10">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-800">Reservations</h2>
+      <div id="reservations" class="space-y-4"></div>
+
+      <button
+        id="newBtn"
+        class="mt-6 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg"
+      >
+        Create New Reservation
+      </button>
+    </div>
+
+    <!-- New Reservation Form -->
+    <div id="new-reservation" class="hidden mt-10">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-800">New Reservation</h2>
+      <div class="flex flex-col gap-3">
+        <input
+          id="date"
+          type="date"
+          class="border border-gray-300 rounded-lg p-3"
+        />
+        <input
+          id="time"
+          type="time"
+          class="border border-gray-300 rounded-lg p-3"
+        />
+        <input
+          id="people"
+          type="number"
+          min="1"
+          placeholder="Number of guests"
+          class="border border-gray-300 rounded-lg p-3"
+        />
+        <button
+          id="saveBtn"
+          class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-lg"
+        >
+          Save Reservation
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const emailInput = document.getElementById("email");
+    const checkBtn = document.getElementById("checkBtn");
+    const reservationList = document.getElementById("reservation-list");
+    const reservationsDiv = document.getElementById("reservations");
+    const newReservationDiv = document.getElementById("new-reservation");
+    const newBtn = document.getElementById("newBtn");
+    const saveBtn = document.getElementById("saveBtn");
+
+    const dateInput = document.getElementById("date");
+    const timeInput = document.getElementById("time");
+    const peopleInput = document.getElementById("people");
+
+    let currentEmail = "";
+    let reservations = [];
+
+    checkBtn.addEventListener("click", async () => {
+      currentEmail = emailInput.value.trim();
+      if (!currentEmail) return alert("Please enter a valid email.");
+
+      const res = await fetch("/api/reservations");
+      const data = await res.json();
+      reservations = data.reservations.filter(r => r.email === currentEmail);
+
+      document.getElementById("login").classList.add("hidden");
+      reservationList.classList.remove("hidden");
+
+      renderReservations();
+    });
+
+    function renderReservations() {
+      reservationsDiv.innerHTML = "";
+      if (reservations.length === 0) {
+        reservationsDiv.innerHTML =
+          '<p class="text-gray-600">Create one reservation below.</p>';
+      } else {
+        reservations.forEach((r, i) => {
+          const div = document.createElement("div");
+          div.className =
+            "border border-gray-300 rounded-lg p-4 flex justify-between items-center";
+          div.innerHTML = `
+            <div>
+              <p><strong>Date:</strong> ${r.date}</p>
+              <p><strong>Time:</strong> ${r.time}</p>
+              <p><strong>Guests:</strong> ${r.people}</p>
+            </div>
+            <button class="text-sm text-amber-600 font-semibold" data-index="${i}">Modify</button>
+          `;
+          div.querySelector("button").addEventListener("click", () => modifyReservation(i));
+          reservationsDiv.appendChild(div);
+        });
+      }
+    }
+
+    function modifyReservation(index) {
+      const r = reservations[index];
+      newReservationDiv.classList.remove("hidden");
+      dateInput.value = r.date;
+      timeInput.value = r.time;
+      peopleInput.value = r.people;
+      saveBtn.onclick = () => saveReservation(index);
+    }
+
+    newBtn.addEventListener("click", () => {
+      newReservationDiv.classList.remove("hidden");
+      dateInput.value = "";
+      timeInput.value = "";
+      peopleInput.value = "";
+      saveBtn.onclick = () => saveReservation();
+    });
+
+    async function saveReservation(index = null) {
+      const newR = {
+        email: currentEmail,
+        date: dateInput.value,
+        time: timeInput.value,
+        people: peopleInput.value,
+      };
+
+      if (!newR.date || !newR.time || !newR.people)
+        return alert("Fill all fields.");
+
+      const method = index === null ? "POST" : "PUT";
+      const body = JSON.stringify({ reservation: newR, email: currentEmail, index });
+
+      await fetch("/api/reservations", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+
+      alert("Reservation saved!");
+      location.reload();
+    }
+  </script>
+</Layout>

@@ -1,0 +1,22 @@
+{
+  "reservations": [
+    {
+      "email": "jalllox.dev@gmail.com",
+      "date": "2025-11-14",
+      "time": "18:42",
+      "people": "5"
+    },
+    {
+      "email": "jalllox.dev@gmail.com",
+      "date": "2025-12-18",
+      "time": "02:30",
+      "people": "2"
+    },
+    {
+      "email": "example@example.com",
+      "date": "2025-11-05",
+      "time": "17:14",
+      "people": "100"
+    }
+  ]
+}

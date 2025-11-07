@@ -1,0 +1,53 @@
+---
+import Navbar from "../components/Navbar.astro";
+import "../styles/global.css";
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Pizzaurant</title>
+	</head>
+	<body>
+		<Navbar />
+		<div class="c">
+			<slot />
+		</div>
+		<footer class="bg-black text-gray-400 text-center py-6 text-sm">
+			<p>© 2025 Restaurant. Crafted with flavor & style.</p>
+		</footer>
+		<script>
+			const menuBtn = document.getElementById("menu-btn");
+			const mobileMenu = document.getElementById("mobile-menu");
+			const scrollTopBtn = document.getElementById("scroll-top");
+
+			menuBtn.addEventListener("click", () =>
+				mobileMenu.classList.toggle("hidden"),
+			);
+
+			window.addEventListener("scroll", () => {
+				if (window.scrollY > 500) {
+					scrollTopBtn.classList.remove("hidden");
+				} else {
+					scrollTopBtn.classList.add("hidden");
+				}
+			});
+
+			scrollTopBtn.addEventListener("click", () => {
+				window.scrollTo({ top: 0, behavior: "smooth" });
+			});
+		</script>
+	</body>
+</html>
+
+<style>
+	.c {
+		margin: 0;
+		width: 100%;
+		min-height: 90vh;
+	}
+</style>
